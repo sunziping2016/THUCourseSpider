@@ -29,3 +29,7 @@ class CaptchaCache(object):
         m.update(image)
         key = m.hexdigest()
         self.cache[key] = code
+    def merge(self, other):
+        self.cache.update(other.cache)
+    def __len__(self):
+        return len(self.cache)

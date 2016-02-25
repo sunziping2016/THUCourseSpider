@@ -23,4 +23,3 @@ class Settings(object):
     def set(self, name, value):
         self.values[name] = value
 
-

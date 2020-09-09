@@ -7,5 +7,7 @@ venv/
 
 dataset/
 captcha/
+save/
+runs/
 captcha.jpeg
 config.json

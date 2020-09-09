@@ -5,5 +5,7 @@
   "margin-bottom": 2,
   "character-width": 40,
   "slide-x": 10,
-  "blank-distance": 10
+  "blank-distance": 10,
+  "random-seed": 0,
+  "train-test-ratio": 0.8
 }

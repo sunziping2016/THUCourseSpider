@@ -54,11 +54,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.finished_label = QtWidgets.QLabel()
         self.index_label = QtWidgets.QLabel()
+        self.code_label = QtWidgets.QLabel()
         self.pos_label = QtWidgets.QLabel()
         self.results_label = QtWidgets.QLabel()
         self.statusBar().addWidget(self.finished_label)
         self.statusBar().addWidget(VLine())
         self.statusBar().addWidget(self.index_label)
+        self.statusBar().addWidget(VLine())
+        self.statusBar().addWidget(self.code_label)
         self.statusBar().addPermanentWidget(self.pos_label)
         self.statusBar().addPermanentWidget(VLine())
         self.statusBar().addPermanentWidget(self.results_label)
@@ -279,13 +282,19 @@ class MainWindow(QtWidgets.QMainWindow):
     def update_status(self):
         self.finished_label.setText(f'Prog: {len(self.data)}/{len(self.questions)}')
         self.index_label.setText(f'Idx: {self.current + 1}/{len(self.questions)}')
+        if self.current < 0 or self.current >= len(self.questions):
+            code = 'NaN'
+        else:
+            filename = self.questions[self.current]
+            code = os.path.splitext(filename)[0].split('.')[1]
+        self.code_label.setText(f'Code: {code}')
         self.pos_label.setText(f'X: {"N/A" if self.mouse_x is None else self.mouse_x}')
         self.results_label.setText(f'Pos: [{",".join([str(i) for i in self.answer])}]')
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--captcha_dir', default='captcha-test', help='path to the captcha')
+    parser.add_argument('--captcha_dir', default='captcha', help='path to the captcha')
     args, unparsed_args = parser.parse_known_args()
     app = QtWidgets.QApplication(sys.argv[:1] + unparsed_args)
     main_window = MainWindow(args)

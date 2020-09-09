@@ -41,7 +41,7 @@ def main():
         for filename in os.listdir(args.captcha_dir):
             name, ext = os.path.splitext(filename)
             name = name.split('.')
-            if ext == 'jpeg' and len(name) == 2:
+            if ext == '.jpeg' and len(name) == 2 and len(name[0]) == 32:
                 results[name[0]] = name[1]
         code = results.get(key)
         if code is not None:

@@ -1,0 +1,11 @@
+{
+  "margin-top": 8,
+  "margin-left": 10,
+  "margin-right": 10,
+  "margin-bottom": 2,
+  "character-width": 40,
+  "slide-x": 2,
+  "blank-distance": 15,
+  "random-seed": 0,
+  "train-test-ratio": 0.8
+}

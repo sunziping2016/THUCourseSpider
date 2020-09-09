@@ -5,6 +5,7 @@ __pycache__/
 .idea/
 venv/
 
+dataset/
 captcha/
 captcha.jpeg
 config.json

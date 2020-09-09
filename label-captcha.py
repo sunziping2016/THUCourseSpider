@@ -1,5 +1,4 @@
 #!/bin/env python3
-
 import argparse
 import hashlib
 import json

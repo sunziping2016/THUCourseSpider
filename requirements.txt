@@ -4,8 +4,10 @@ chardet==3.0.4
 idna==2.10
 numpy==1.19.1
 opencv-python==4.4.0.42
+Pillow==7.2.0
 PySide2==5.15.0
 requests==2.24.0
 shiboken2==5.15.0
 soupsieve==2.0.1
+tqdm==4.48.2
 urllib3==1.25.10

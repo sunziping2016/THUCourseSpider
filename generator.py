@@ -204,6 +204,7 @@ def main():
                 output, predicate = model(data[0], device)  # seq x n x classes, seq x n
                 loss = criterion(output.transpose(0, 1).reshape(-1, 26), data[1].view(-1))
                 losses.append(loss.item())
+                # noinspection PyUnresolvedReferences
                 this_count = (predicate.transpose(0, 1) == data[1]).all(dim=1).sum().item()
                 correct_count += this_count
                 writer.add_scalar('train/loss', loss.item(), step)

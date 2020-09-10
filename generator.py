@@ -22,7 +22,7 @@ CLASSES_TO_ID = {k: i for i, k in enumerate(CLASSES)}
 
 
 class CaptchaDecoder(nn.Module):
-    def __init__(self, hidden_size=1024, n_classes=25, sequence_len=5):
+    def __init__(self, hidden_size=2048, n_classes=25, sequence_len=5):
         super(CaptchaDecoder, self).__init__()
         self.hidden_size = hidden_size
         self.sequence_len = sequence_len
@@ -65,7 +65,7 @@ class CaptchaGenerator(nn.Module):
             parameter.requires_grad = False
         self.mapper = nn.Sequential(
             nn.Dropout(),
-            nn.Linear(3 * 3 * 64 * 15, 1024),
+            nn.Linear(3 * 3 * 64 * 15, 2048),
             nn.ReLU(inplace=True),
         )
         self.decoder = CaptchaDecoder()
@@ -151,7 +151,7 @@ def main():
     parser.add_argument('--valid_every_epoch', type=int, default=1,
                         help='run validation every numbers of epoch; '
                              '0 for disabling')
-    parser.add_argument('--save_every_epoch', type=int, default=1,
+    parser.add_argument('--save_every_epoch', type=int, default=10,
                         help='save model every numbers of epoch; '
                              '0 for disabling')
     parser.add_argument('--comment', default='', help='comment for tensorboard')
@@ -197,21 +197,27 @@ def main():
         step = 0
         for epoch in tqdm(range(args.load + 1, args.epoch + 1), desc='Epoch'):
             losses = []
+            total_count, correct_count = 0, 0
             for iter, data in enumerate(tqdm(train_data_loader, desc='Iter'), 1):
                 data = [x.to(device) for x in data]
+                total_count += data[1].size(0)
                 output, predicate = model(data[0], device)  # seq x n x classes, seq x n
                 loss = criterion(output.transpose(0, 1).reshape(-1, 26), data[1].view(-1))
                 losses.append(loss.item())
+                this_count = (predicate.transpose(0, 1) == data[1]).all(dim=1).sum().item()
+                correct_count += this_count
                 writer.add_scalar('train/loss', loss.item(), step)
+                writer.add_scalar('train/accuracy', this_count / data[1].size(0), step)
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
                 if iter % args.log_every_iter == 0:
                     # noinspection PyStringFormat
-                    tqdm.write('epoch:[%d/%d] iter:[%d/%d] Loss=%.5f' %
+                    tqdm.write('epoch:[%d/%d] iter:[%d/%d] Loss=%.5f Accuracy=%.5f' %
                                (epoch, args.epoch, iter, len(train_data_loader),
-                                np.mean(losses)))
+                                np.mean(losses), correct_count / total_count))
                     losses = []
+                    total_count, correct_count = 0, 0
                 step += 1
             if args.valid_every_epoch and epoch % args.valid_every_epoch == 0:
                 if valid_data_loader is None:
@@ -236,7 +242,20 @@ def main():
                 torch.save((model.state_dict(), optimizer.state_dict()),
                            os.path.join(args.save_path,
                                         'epoch.%04d.pth' % epoch))
-
+    elif args.task == 'valid':
+        model.eval()
+        # noinspection PyUnresolvedReferences
+        valid_dataset = CaptchaDataset(os.path.join(args.dataset_path, 'test'),
+                                       transform=transforms.Compose([
+                                           transforms.Grayscale(),
+                                           transforms.ToTensor(),
+                                       ]))
+        valid_data_loader = DataLoader(valid_dataset,
+                                       batch_size=args.batch_size,
+                                       shuffle=False)
+        loss, acc = eval_model(model, valid_data_loader, device)
+        # noinspection PyStringFormat
+        tqdm.write('Loss=%f Accuracy=%f' % (loss, acc))
     running_log.set('state', 'succeeded')
 
 

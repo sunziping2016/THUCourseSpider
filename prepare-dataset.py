@@ -28,12 +28,14 @@ def main():
         random.Random(config['random-seed']).shuffle(lines)
     else:
         random.shuffle(lines)
-    for count, line in enumerate(tqdm(lines, desc='Generating')):
+    filenames = set()
+    for count, line in enumerate(tqdm(lines, desc='Segmented')):
         line = line.strip()
         filename, segments = line.split(':')
         segments = [int(i) for i in segments.split(',')]
         filename_without_ext = os.path.splitext(filename)[0]
         code = filename_without_ext.split('.')[1]
+        filenames.add(filename)
         try:
             image = Image.open(os.path.join(args.captcha_dir, filename))
         except FileNotFoundError:
@@ -67,6 +69,22 @@ def main():
             os.makedirs(folder, exist_ok=True)
             with open(os.path.join(folder, f'{filename_without_ext}.{round(center)}.jpeg'), 'wb') as image_file:
                 character_image.save(image_file)
+    unsegmented = []
+    for filename in os.listdir(args.captcha_dir):
+        name, ext = os.path.splitext(filename)
+        name = name.split('.')
+        if ext == '.jpeg' and len(name) == 2 and len(name[0]) == 32 and filename not in filenames:
+            unsegmented.append(filename)
+    for count, filename in enumerate(tqdm(unsegmented, desc='Unsegmented')):
+        train_or_test = 'train' if count / (len(unsegmented) - 1) <= config.get('train-test-ratio', 0.8) else 'test'
+        folder = os.path.join(args.whole_dir, train_or_test)
+        os.makedirs(folder, exist_ok=True)
+        with open(os.path.join(folder, filename), 'wb') as image_file:
+            image.save(image_file)
+        folder = os.path.join(args.whole_dir, 'all')
+        os.makedirs(folder, exist_ok=True)
+        with open(os.path.join(folder, filename), 'wb') as image_file:
+            image.save(image_file)
 
 
 if __name__ == '__main__':

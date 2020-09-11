@@ -81,9 +81,9 @@ def main():
                         help='load module training at give epoch')
     parser.add_argument('--load_classifier', type=int, default=20,
                         help='load module training at give epoch')
-    parser.add_argument('--epoch', type=int, default=100, help='epoch to train')
+    parser.add_argument('--epoch', type=int, default=50, help='epoch to train')
     parser.add_argument('--batch_size', type=int, default=64, help='batch size')
-    parser.add_argument('--learning_rate', type=float, default=0.00003,
+    parser.add_argument('--learning_rate', type=float, default=0.0001,
                         help='learning rate')
     parser.add_argument('--log_every_iter', type=int, default=5,
                         help='log loss every numbers of iteration')

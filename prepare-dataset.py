@@ -7,10 +7,7 @@ import random
 from PIL import Image, ImageOps
 from tqdm import tqdm
 
-SEGMENTATION_FILE_NAME = "segmentation.txt"
-
-IMAGE_WIDTH = 200
-IMAGE_HEIGHT = 50
+import constants
 
 
 def main():
@@ -22,7 +19,7 @@ def main():
     args = parser.parse_args()
     with open(args.config) as f:
         config = json.load(f)
-    with open(os.path.join(args.captcha_dir, SEGMENTATION_FILE_NAME)) as f:
+    with open(os.path.join(args.captcha_dir, constants.SEGMENTATION_FILE_NAME)) as f:
         lines = f.readlines()
     if 'random-seed' in config:
         random.Random(config['random-seed']).shuffle(lines)
@@ -43,8 +40,8 @@ def main():
         image = ImageOps.grayscale(image)
         image = image.crop((
             config['margin-left'], config['margin-top'],
-            IMAGE_WIDTH - config['margin-right'],
-            IMAGE_HEIGHT - config['margin-bottom']
+            constants.IMAGE_WIDTH - config['margin-right'],
+            constants.IMAGE_HEIGHT - config['margin-bottom']
         ))
         train_or_test = 'train' if count / (len(lines) - 1) <= config.get('train-test-ratio', 0.8) else 'test'
         folder = os.path.join(args.whole_dir, train_or_test)
@@ -83,8 +80,8 @@ def main():
         image = ImageOps.grayscale(image)
         image = image.crop((
             config['margin-left'], config['margin-top'],
-            IMAGE_WIDTH - config['margin-right'],
-            IMAGE_HEIGHT - config['margin-bottom']
+            constants.IMAGE_WIDTH - config['margin-right'],
+            constants.IMAGE_HEIGHT - config['margin-bottom']
         ))
         train_or_test = 'train' if count / (len(unsegmented) - 1) <= config.get('train-test-ratio', 0.8) else 'test'
         folder = os.path.join(args.whole_dir, train_or_test)

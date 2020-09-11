@@ -13,14 +13,9 @@ from torchvision.datasets import ImageFolder
 from tqdm import tqdm
 
 from data_parallel import get_data_parallel
+from helpers import load_epoch
 from models import CaptchaClassifierCNN40x40
 from running_log import RunningLog
-
-
-def load_epoch(save_path, epoch):
-    tqdm.write('loading from epoch.%04d.pth' % epoch)
-    return torch.load(os.path.join(save_path, 'epoch.%04d.pth' % epoch),
-                      map_location='cpu')
 
 
 def eval_model(model, valid_data_loader, device):

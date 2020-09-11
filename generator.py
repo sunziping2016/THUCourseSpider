@@ -13,19 +13,11 @@ from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 from tqdm import tqdm
 
+import constants
 from data_parallel import get_data_parallel
+from helpers import load_epoch
 from models import CaptchaGenerator_40x40
 from running_log import RunningLog
-
-CLASSES = ['#', '+', '2', '3', '4', '6', '7', '8', '9', 'B', 'C', 'E', 'F',
-           'G', 'H', 'J', 'K', 'M', 'P', 'Q', 'R', 'T', 'V', 'W', 'X', 'Y']
-CLASSES_TO_ID = {k: i for i, k in enumerate(CLASSES)}
-IMAGE_WIDTH = 200
-
-def load_epoch(save_path, epoch):
-    tqdm.write('loading from epoch.%04d.pth' % epoch)
-    return torch.load(os.path.join(save_path, 'epoch.%04d.pth' % epoch),
-                      map_location='cpu')
 
 
 class CaptchaDataset(Dataset):
@@ -48,7 +40,7 @@ class CaptchaDataset(Dataset):
             img = img.convert('RGB')
         if self.transform:
             img = self.transform(img)
-        code = [CLASSES_TO_ID[char] for char in self.results[idx][1]]
+        code = [constants.CLASSES_TO_ID[char] for char in self.results[idx][1]]
         code = code + (5 - len(code)) * [1]
         return img, torch.LongTensor(code)
 
@@ -69,8 +61,8 @@ def eval_model(model, valid_data_loader, device):
         correct_count += (predicate == data[1]).all(dim=1).sum().item()
         predicates += predicate.tolist()
     return np.mean(losses), correct_count / total_count, \
-        [''.join([CLASSES[i] for i in item]) for item in predicates]
-False
+        [''.join([constants.CLASSES[i] for i in item]) for item in predicates]
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -110,7 +102,7 @@ def main():
     os.makedirs(args.save_path, exist_ok=True)
     model = get_data_parallel(CaptchaGenerator_40x40(
         slide_x=config['slide-x'],
-        total_width=IMAGE_WIDTH - config['margin-left'] - config['margin-right']
+        total_width=constants.IMAGE_WIDTH - config['margin-left'] - config['margin-right']
     ), args.gpu)
     device = torch.device("cuda:%d" % args.gpu[0] if args.gpu else "cpu")
     optimizer_state_dict = None

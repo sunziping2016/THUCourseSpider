@@ -7,11 +7,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 
-headers = {
-    'Host': 'zhjwxk.cic.tsinghua.edu.cn',
-    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                  'Chrome/85.0.4183.83 Safari/537.36',
-}
+import constants
 
 
 def main():
@@ -25,7 +21,7 @@ def main():
     os.makedirs(args.captcha_dir, exist_ok=True)
     while True:
         s = requests.Session()
-        s.headers.update(headers)
+        s.headers.update(constants.CRAWLER_HEADERS)
         s.get('http://zhjwxk.cic.tsinghua.edu.cn/xsxk_index.jsp', allow_redirects=False)
         r = s.get('http://zhjwxk.cic.tsinghua.edu.cn/login-jcaptcah.jpg?captchaflag=login1', stream=True)
         with open(args.temp_file, 'wb') as f:

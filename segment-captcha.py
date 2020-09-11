@@ -6,24 +6,8 @@ import sys
 
 from PySide2 import QtWidgets, QtCore, QtGui
 
-SEGMENTATION_FILE_NAME = "segmentation.txt"
-
-IMAGE_WIDTH = 200
-IMAGE_HEIGHT = 50
-IMAGE_SCALE = 3
-
-SCALED_WIDTH = IMAGE_WIDTH * IMAGE_SCALE
-SCALED_HEIGHT = IMAGE_HEIGHT * IMAGE_SCALE
-
-SELECT_X_MAX_DISTANCE = 5
-LINE_WIDTH = 2 * IMAGE_SCALE
-
-
-class VLine(QtWidgets.QFrame):
-    def __init__(self):
-        super(VLine, self).__init__()
-        self.setFrameShape(self.VLine)
-        self.setFrameShadow(self.Sunken)
+import constants
+from gui import VLine
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -116,8 +100,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def mousePressEvent(self, event):
         relative_x = event.x() - self.image_label.geometry().x()
-        relative_x = round(relative_x / IMAGE_SCALE)
-        selected_items = [i for i in self.answer if abs(relative_x - i) <= SELECT_X_MAX_DISTANCE]
+        relative_x = round(relative_x / constants.IMAGE_SCALE)
+        selected_items = [i for i in self.answer if abs(relative_x - i) <= constants.SELECT_X_MAX_DISTANCE]
         if len(selected_items):
             selected = selected_items[0]
             self.answer.remove(selected)
@@ -132,9 +116,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def mouseReleaseEvent(self, event):
         relative_x = event.x() - self.image_label.geometry().x()
-        relative_x = round(relative_x / IMAGE_SCALE)
+        relative_x = round(relative_x / constants.IMAGE_SCALE)
         if self.mouse_moved or self.mouse_new:
-            selected_items = [i for i in self.answer if abs(relative_x - i) <= SELECT_X_MAX_DISTANCE]
+            selected_items = [i for i in self.answer if abs(relative_x - i) <= constants.SELECT_X_MAX_DISTANCE]
             if len(selected_items) == 0:
                 bisect.insort(self.answer, relative_x)
         self.mouse_pressed = False
@@ -142,11 +126,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def mouseMoveEvent(self, event):
         relative_x = event.x() - self.image_label.geometry().x()
-        relative_x = round(relative_x / IMAGE_SCALE)
+        relative_x = round(relative_x / constants.IMAGE_SCALE)
         if relative_x < 0:
             relative_x = 0
-        if relative_x >= IMAGE_WIDTH:
-            relative_x = IMAGE_WIDTH - 1
+        if relative_x >= constants.IMAGE_WIDTH:
+            relative_x = constants.IMAGE_WIDTH - 1
         self.mouse_x = relative_x
         self.mouse_moved = True
         self.update_view()
@@ -220,7 +204,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def load_data(self):
         self.data = {}
         try:
-            with open(os.path.join(self.args.captcha_dir, SEGMENTATION_FILE_NAME)) as f:
+            with open(os.path.join(self.args.captcha_dir, constants.SEGMENTATION_FILE_NAME)) as f:
                 for line in f:
                     line = line.strip()
                     key, value = line.split(':')
@@ -236,7 +220,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.questions.append(filename)
 
     def save_data(self):
-        with open(os.path.join(self.args.captcha_dir, SEGMENTATION_FILE_NAME), 'w') as f:
+        with open(os.path.join(self.args.captcha_dir, constants.SEGMENTATION_FILE_NAME), 'w') as f:
             for key in sorted(self.data.keys()):
                 f.write(f'{key}:{",".join([str(i) for i in self.data[key]])}\n')
 
@@ -266,17 +250,18 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.current < 0 or self.current >= len(self.questions):
             self.image_label.setText("All Finished.")
         else:
-            pixmap = QtGui.QPixmap(SCALED_WIDTH, SCALED_HEIGHT)
+            pixmap = QtGui.QPixmap(constants.SCALED_WIDTH, constants.SCALED_HEIGHT)
             painter = QtGui.QPainter(pixmap)
             filename = os.path.join(self.args.captcha_dir, self.questions[self.current])
             image = QtGui.QPixmap(filename)
-            painter.drawPixmap(0, 0, SCALED_WIDTH, SCALED_HEIGHT, image)
-            painter.setPen(QtGui.QPen(QtGui.QColor('green'), LINE_WIDTH))
+            painter.drawPixmap(0, 0, constants.SCALED_WIDTH, constants.SCALED_HEIGHT, image)
+            painter.setPen(QtGui.QPen(QtGui.QColor('green'), constants.LINE_WIDTH))
             for x in self.answer:
-                painter.drawLine(x * IMAGE_SCALE, 0, x * IMAGE_SCALE, SCALED_HEIGHT)
+                painter.drawLine(x * constants.IMAGE_SCALE, 0, x * constants.IMAGE_SCALE, constants.SCALED_HEIGHT)
             if self.mouse_pressed:
-                painter.setPen(QtGui.QPen(QtGui.QColor('red'), LINE_WIDTH))
-                painter.drawLine(self.mouse_x * IMAGE_SCALE, 0, self.mouse_x * IMAGE_SCALE, SCALED_HEIGHT)
+                painter.setPen(QtGui.QPen(QtGui.QColor('red'), constants.LINE_WIDTH))
+                painter.drawLine(self.mouse_x * constants.IMAGE_SCALE, 0,
+                                 self.mouse_x * constants.IMAGE_SCALE, constants.SCALED_HEIGHT)
             painter.end()
             self.image_label.setPixmap(pixmap)
 

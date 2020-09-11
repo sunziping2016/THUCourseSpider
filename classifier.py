@@ -13,36 +13,8 @@ from torchvision.datasets import ImageFolder
 from tqdm import tqdm
 
 from data_parallel import get_data_parallel
+from models import CaptchaClassifierCNN40x40
 from running_log import RunningLog
-
-
-class CaptchaClassifierCNN(nn.Module):
-    def __init__(self, n_classes=25):
-        super(CaptchaClassifierCNN, self).__init__()
-        self.features = nn.Sequential(         # 1 x 40 x 40
-            nn.Conv2d(1, 32, kernel_size=5),   # 32 x 36 x 36
-            nn.MaxPool2d(2),                   # 32 x 18 x 18
-            nn.ReLU(inplace=True),
-            nn.Conv2d(32, 32, kernel_size=3),  # 32 x 16 x 16
-            nn.MaxPool2d(2),                   # 32 x 8 x 8
-            nn.ReLU(inplace=True),
-            nn.Conv2d(32, 64, kernel_size=3),  # 64 x 6 x 6
-            nn.MaxPool2d(2),                   # 64 x 3 x 3
-            nn.ReLU(inplace=True),
-        )
-        self.classifier = nn.Sequential(
-            nn.Dropout(),
-            nn.Linear(3 * 3 * 64, 256),
-            nn.ReLU(inplace=True),
-            nn.Dropout(),
-            nn.Linear(256, n_classes)
-        )
-
-    def forward(self, x):
-        x = self.features(x)
-        x = torch.flatten(x, 1)
-        x = self.classifier(x)
-        return x
 
 
 def load_epoch(save_path, epoch):
@@ -78,7 +50,7 @@ def main():
                         default=[], help="GPU ids separated by `,'")
     parser.add_argument('--load', type=int, default=0,
                         help='load module training at give epoch')
-    parser.add_argument('--epoch', type=int, default=200, help='epoch to train')
+    parser.add_argument('--epoch', type=int, default=20, help='epoch to train')
     parser.add_argument('--batch_size', type=int, default=64, help='batch size')
     parser.add_argument('--learning_rate', type=float, default=0.0001,
                         help='learning rate')
@@ -87,7 +59,7 @@ def main():
     parser.add_argument('--valid_every_epoch', type=int, default=1,
                         help='run validation every numbers of epoch; '
                              '0 for disabling')
-    parser.add_argument('--save_every_epoch', type=int, default=1,
+    parser.add_argument('--save_every_epoch', type=int, default=5,
                         help='save model every numbers of epoch; '
                              '0 for disabling')
     parser.add_argument('--comment', default='', help='comment for tensorboard')
@@ -95,7 +67,7 @@ def main():
     running_log = RunningLog(args.save_path)
     running_log.set('parameters', vars(args))
     os.makedirs(args.save_path, exist_ok=True)
-    model = get_data_parallel(CaptchaClassifierCNN(), args.gpu)
+    model = get_data_parallel(CaptchaClassifierCNN40x40(), args.gpu)
     device = torch.device("cuda:%d" % args.gpu[0] if args.gpu else "cpu")
     optimizer_state_dict = None
     if args.load > 0:

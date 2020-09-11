@@ -76,6 +76,16 @@ def main():
         if ext == '.jpeg' and len(name) == 2 and len(name[0]) == 32 and filename not in filenames:
             unsegmented.append(filename)
     for count, filename in enumerate(tqdm(unsegmented, desc='Unsegmented')):
+        try:
+            image = Image.open(os.path.join(args.captcha_dir, filename))
+        except FileNotFoundError:
+            continue
+        image = ImageOps.grayscale(image)
+        image = image.crop((
+            config['margin-left'], config['margin-top'],
+            IMAGE_WIDTH - config['margin-right'],
+            IMAGE_HEIGHT - config['margin-bottom']
+        ))
         train_or_test = 'train' if count / (len(unsegmented) - 1) <= config.get('train-test-ratio', 0.8) else 'test'
         folder = os.path.join(args.whole_dir, train_or_test)
         os.makedirs(folder, exist_ok=True)

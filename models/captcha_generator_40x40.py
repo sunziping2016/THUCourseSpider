@@ -6,15 +6,16 @@ from .feature_extractor_40x40 import CaptchFeatureExtractor40x40
 
 
 class CaptchaGenerator_40x40(nn.Module):
-    def __init__(self, encoder_len=256, hidden_size=2048, slide_x=5, total_width=180):
+    def __init__(self, encoder_len=256, hidden_size=2048, slide_x=5, total_width=180, lock_classifier=True):
         super(CaptchaGenerator_40x40, self).__init__()
         self.slide_width = 40
         self.slide_x = slide_x
         self.encoder_len = encoder_len
         self.slide_num = (total_width - self.slide_width) // slide_x + 1
         self.features = CaptchFeatureExtractor40x40()
-        for parameter in self.features.children():
-            parameter.requires_grad = False
+        if lock_classifier:
+            for parameter in self.features.children():
+                parameter.requires_grad = False
         self.mapper = nn.Sequential(
             nn.Dropout(),
             nn.Linear(encoder_len * self.slide_num, hidden_size),

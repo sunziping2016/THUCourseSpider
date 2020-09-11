@@ -94,6 +94,7 @@ def main():
                         help='save model every numbers of epoch; '
                              '0 for disabling')
     parser.add_argument('--comment', default='', help='comment for tensorboard')
+    parser.add_argument('--unlock_classifier', action='store_true', help='train classifier')
     args = parser.parse_args()
     with open(args.config) as f:
         config = json.load(f)
@@ -102,7 +103,8 @@ def main():
     os.makedirs(args.save_path, exist_ok=True)
     model = get_data_parallel(CaptchaGenerator_40x40(
         slide_x=config['slide-x'],
-        total_width=constants.IMAGE_WIDTH - config['margin-left'] - config['margin-right']
+        total_width=constants.IMAGE_WIDTH - config['margin-left'] - config['margin-right'],
+        lock_classifier=not args.unlock_classifier
     ), args.gpu)
     device = torch.device("cuda:%d" % args.gpu[0] if args.gpu else "cpu")
     optimizer_state_dict = None

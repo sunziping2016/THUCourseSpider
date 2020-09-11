@@ -31,6 +31,7 @@ def main():
                         help='load module training at give epoch')
     parser.add_argument('--disable_generator', action='store_true', help='disable neural networks')
     parser.add_argument('--max_try', type=int, default=10, help='max try number for captcha')
+    parser.add_argument('--verbose', action='store_true', help='show more messages')
     args = parser.parse_args()
     courses = {}
     with open(args.config) as f:
@@ -111,7 +112,8 @@ def main():
             break
         print('login successfully!')
         for count, (section, course) in enumerate(itertools.cycle(courses.items())):
-            print(f'select {section}')
+            if args.verbose:
+                print(f'select {section}')
             response = session.get('http://zhjwxk.cic.tsinghua.edu.cn/xkYjs.vxkYjsXkbBs.do', params={
                 'm': section[0],
                 'p_xnxq': section[2],
@@ -131,7 +133,8 @@ def main():
                 course_id = int(reg.sub('', tds[2].text))
                 if (course_no, course_id) in course:
                     left = int(reg.sub('', tds[4].text))
-                    print('course %s:%s has %d left.' % (course_no, course_id, left))
+                    if args.verbose:
+                        print('course %s:%s has %d left.' % (course_no, course_id, left))
                     if left > 0:
                         course_ids.append(tds[0].find('input')['value'])
             if course_ids:

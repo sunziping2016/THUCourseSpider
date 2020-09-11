@@ -19,7 +19,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.args = args
         with open(args.config) as f:
             self.config = json.load(f)
-        if self.args.enable_generator:
+        if not self.args.disable_generator:
             from torchvision import transforms
 
             from data_parallel import get_data_parallel
@@ -151,7 +151,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.results[name[0]] = name[1]
             code = self.results.get(self.key)
             print(f'search result: {code}')
-        if self.args.enable_generator:
+        if not self.args.disable_generator:
             import torch
             from PIL import Image
 
@@ -191,9 +191,9 @@ def main():
                         default='save/generator')
     parser.add_argument('--gpu', type=lambda x: list(map(int, x.split(','))),
                         default=[], help="GPU ids separated by `,'")
-    parser.add_argument('--load_generator', type=int, default=100,
+    parser.add_argument('--load_generator', type=int, default=50,
                         help='load module training at give epoch')
-    parser.add_argument('--enable_generator', action='store_true', help='enable nerual networks')
+    parser.add_argument('--disable_generator', action='store_true', help='disable neural networks')
     args, unparsed_args = parser.parse_known_args()
     app = QtWidgets.QApplication(sys.argv[:1] + unparsed_args)
     main_window = MainWindow(args)

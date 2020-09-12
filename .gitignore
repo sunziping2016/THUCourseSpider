@@ -11,3 +11,5 @@ save/
 runs/
 captcha.jpeg
 config.json
+courses.csv
+response.html
